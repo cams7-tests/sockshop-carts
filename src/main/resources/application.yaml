@@ -1,0 +1,33 @@
+server:
+  port: ${port:8080}
+#  servlet:
+#    context-path: ${CONTEXT_PATH:/}
+spring:
+  application:
+    name: carts
+  data:
+    mongodb:
+      uri: mongodb://${db:carts-db}:27017/data
+  zipkin:
+    base-url: http://${zipkin_host:zipkin}:9411/
+    enabled: ${zipkin_enabled:false}
+  sleuth:
+    sampler:
+      probability: 1.0  
+management:
+  endpoint:
+    health:
+      enabled: false
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include:
+        - '*'
+  metrics:
+    export:
+      prometheus:
+        enabled: true

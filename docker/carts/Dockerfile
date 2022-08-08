@@ -1,11 +1,10 @@
-FROM weaveworksdemos/msd-java:latest
+FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.14.1_1
 
 WORKDIR /usr/src/app
-COPY *.jar ./app.jar
+COPY ./target/*.jar ./app.jar
 
-RUN	chown -R ${SERVICE_USER}:${SERVICE_GROUP} ./app.jar
-
-USER ${SERVICE_USER}
+#RUN	chown -R ${SERVICE_USER}:${SERVICE_GROUP} ./app.jar
+#USER ${SERVICE_USER}
 
 ARG BUILD_DATE
 ARG BUILD_VERSION
@@ -21,5 +20,7 @@ LABEL org.label-schema.vendor="Weaveworks" \
   org.label-schema.vcs-ref="${COMMIT}" \
   org.label-schema.schema-version="1.0"
 
+EXPOSE 80
+
 ENV JAVA_OPTS "-Djava.security.egd=file:/dev/urandom"
-ENTRYPOINT ["/usr/local/bin/java.sh","-jar","./app.jar", "--port=80"]
+ENTRYPOINT ["java","-jar","./app.jar", "--port=80"]
