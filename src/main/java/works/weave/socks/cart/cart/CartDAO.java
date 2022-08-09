@@ -18,12 +18,12 @@ public interface CartDAO {
 
     @Override
     public void delete(Cart cart) {
-      cartStore.remove(cart.customerId);
+      cartStore.remove(cart.getCustomerId());
     }
 
     @Override
     public Cart save(Cart cart) {
-      return cartStore.put(cart.customerId, cart);
+      return cartStore.put(cart.getCustomerId(), cart);
     }
 
     @Override
