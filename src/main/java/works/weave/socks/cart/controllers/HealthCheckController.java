@@ -1,8 +1,6 @@
 package works.weave.socks.cart.controllers;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,10 +20,9 @@ public class HealthCheckController {
   public @ResponseBody Map<String, List<HealthCheck>> getHealth() {
     Map<String, List<HealthCheck>> map = new HashMap<String, List<HealthCheck>>();
     List<HealthCheck> healthChecks = new ArrayList<HealthCheck>();
-    Date dateNow = Calendar.getInstance().getTime();
 
-    HealthCheck app = new HealthCheck("carts", "OK", dateNow);
-    HealthCheck database = new HealthCheck("carts-db", "OK", dateNow);
+    HealthCheck app = new HealthCheck("carts", "OK");
+    HealthCheck database = new HealthCheck("carts-db", "OK");
 
     try {
       mongoTemplate.executeCommand("{ buildInfo: 1 }");
