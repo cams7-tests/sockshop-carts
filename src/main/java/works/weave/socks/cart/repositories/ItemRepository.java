@@ -5,6 +5,4 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import works.weave.socks.cart.entities.Item;
 
 @RepositoryRestResource
-public interface ItemRepository extends MongoRepository<Item, String> {
-}
-
+public interface ItemRepository extends MongoRepository<Item, String> {}
