@@ -23,8 +23,6 @@ import works.weave.socks.cart.item.ItemDAO;
 @ContextConfiguration
 public class UnitCartsController {
 
-  @Autowired private ItemsController itemsController;
-
   @Autowired private CartDAO cartDAO;
 
   @Autowired private CartsController cartsController;
@@ -72,16 +70,6 @@ public class UnitCartsController {
   @Configuration
   static class ItemsControllerTestConfiguration {
     @Bean
-    public ItemsController itemsController() {
-      return new ItemsController();
-    }
-
-    @Bean
-    public CartsController cartsController() {
-      return new CartsController();
-    }
-
-    @Bean
     public ItemDAO itemDAO() {
       return new ItemDAO.Fake();
     }
@@ -89,6 +77,17 @@ public class UnitCartsController {
     @Bean
     public CartDAO cartDAO() {
       return new CartDAO.Fake();
+    }
+
+    @Bean
+    public CartsController cartsController(CartDAO cartDAO) {
+      return new CartsController(cartDAO);
+    }
+
+    @Bean
+    public ItemsController itemsController(
+        ItemDAO itemDAO, CartDAO cartDAO, CartsController cartsController) {
+      return new ItemsController(itemDAO, cartDAO, cartsController);
     }
   }
 }

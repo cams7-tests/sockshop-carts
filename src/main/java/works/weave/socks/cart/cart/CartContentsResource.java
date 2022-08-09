@@ -1,23 +1,17 @@
 package works.weave.socks.cart.cart;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 import java.util.List;
 import java.util.function.Supplier;
-import org.slf4j.Logger;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import works.weave.socks.cart.entities.Cart;
 import works.weave.socks.cart.entities.Item;
 
+@RequiredArgsConstructor
+@Log4j2
 public class CartContentsResource implements Contents<Item> {
-  private final Logger LOG = getLogger(getClass());
-
   private final CartDAO cartRepository;
   private final Supplier<Resource<Cart>> parent;
-
-  public CartContentsResource(CartDAO cartRepository, Supplier<Resource<Cart>> parent) {
-    this.cartRepository = cartRepository;
-    this.parent = parent;
-  }
 
   @Override
   public Supplier<List<Item>> contents() {
@@ -27,7 +21,7 @@ public class CartContentsResource implements Contents<Item> {
   @Override
   public Runnable add(Supplier<Item> item) {
     return () -> {
-      LOG.debug("Adding for user: " + parent.get().value().get().toString() + ", " + item.get());
+      log.debug("Adding for user: {}, {}", parent.get().value().get(), item.get());
       cartRepository.save(parentCart().add(item.get()));
     };
   }
@@ -35,7 +29,7 @@ public class CartContentsResource implements Contents<Item> {
   @Override
   public Runnable delete(Supplier<Item> item) {
     return () -> {
-      LOG.debug("Deleting for user: " + parent.get().value().get().toString() + ", " + item.get());
+      log.debug("Deleting for user: {}, {}", parent.get().value().get(), item.get());
       cartRepository.save(parentCart().remove(item.get()));
     };
   }

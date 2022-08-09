@@ -1,42 +1,46 @@
 package works.weave.socks.cart.controllers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import static org.springframework.http.HttpStatus.ACCEPTED;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import works.weave.socks.cart.cart.CartDAO;
 import works.weave.socks.cart.cart.CartResource;
 import works.weave.socks.cart.entities.Cart;
 
+@RequiredArgsConstructor
+@Log4j2
 @RestController
-@RequestMapping(path = "/carts")
+@RequestMapping(path = "/carts", produces = APPLICATION_JSON_VALUE)
 public class CartsController {
-  private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final CartDAO cartDAO;
 
-  @Autowired private CartDAO cartDAO;
-
-  @ResponseStatus(HttpStatus.OK)
-  @RequestMapping(
-      value = "/{customerId}",
-      produces = MediaType.APPLICATION_JSON_VALUE,
-      method = RequestMethod.GET)
+  @ResponseStatus(OK)
+  @GetMapping(value = "/{customerId}")
   public Cart get(@PathVariable String customerId) {
     return new CartResource(cartDAO, customerId).value().get();
   }
 
-  @ResponseStatus(HttpStatus.ACCEPTED)
-  @RequestMapping(value = "/{customerId}", method = RequestMethod.DELETE)
+  @ResponseStatus(ACCEPTED)
+  @DeleteMapping(value = "/{customerId}")
   public void delete(@PathVariable String customerId) {
     new CartResource(cartDAO, customerId).destroy().run();
   }
 
-  @ResponseStatus(HttpStatus.ACCEPTED)
-  @RequestMapping(value = "/{customerId}/merge", method = RequestMethod.GET)
+  @ResponseStatus(ACCEPTED)
+  @GetMapping(value = "/{customerId}/merge")
   public void mergeCarts(
       @PathVariable String customerId, @RequestParam(value = "sessionId") String sessionId) {
-    logger.debug("Merge carts request received for ids: " + customerId + " and " + sessionId);
+    log.debug("Merge carts request received for ids: {} and {}", customerId, sessionId);
     CartResource sessionCart = new CartResource(cartDAO, sessionId);
     CartResource customerCart = new CartResource(cartDAO, customerId);
     customerCart.merge(sessionCart.value().get()).run();

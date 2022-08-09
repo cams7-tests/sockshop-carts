@@ -24,8 +24,6 @@ public class UnitItemsController {
 
   @Autowired private ItemDAO itemDAO;
 
-  @Autowired private CartsController cartsController;
-
   @Test
   public void whenNewItemAdd() {
     Item item = new Item("id", "itemId", 1, 0F);
@@ -71,16 +69,6 @@ public class UnitItemsController {
   @Configuration
   static class ItemsControllerTestConfiguration {
     @Bean
-    public ItemsController itemsController() {
-      return new ItemsController();
-    }
-
-    @Bean
-    public CartsController cartsController() {
-      return new CartsController();
-    }
-
-    @Bean
     public ItemDAO itemDAO() {
       return new ItemDAO.Fake();
     }
@@ -88,6 +76,17 @@ public class UnitItemsController {
     @Bean
     public CartDAO cartDAO() {
       return new CartDAO.Fake();
+    }
+
+    @Bean
+    public CartsController cartsController(CartDAO cartDAO) {
+      return new CartsController(cartDAO);
+    }
+
+    @Bean
+    public ItemsController itemsController(
+        ItemDAO itemDAO, CartDAO cartDAO, CartsController cartsController) {
+      return new ItemsController(itemDAO, cartDAO, cartsController);
     }
   }
 }

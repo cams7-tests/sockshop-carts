@@ -1,6 +1,7 @@
 package works.weave.socks.cart.cart;
 
 import java.util.function.Supplier;
+import lombok.RequiredArgsConstructor;
 import works.weave.socks.cart.entities.Cart;
 
 public interface Resource<T> {
@@ -12,13 +13,10 @@ public interface Resource<T> {
 
   Runnable merge(T toMerge);
 
+  @RequiredArgsConstructor
   class CartFake implements Resource<Cart> {
     private final String customerId;
-    private Cart cart = null;
-
-    public CartFake(String customerId) {
-      this.customerId = customerId;
-    }
+    private Cart cart;
 
     @Override
     public Runnable destroy() {

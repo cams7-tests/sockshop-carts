@@ -1,17 +1,14 @@
 package works.weave.socks.cart.cart;
 
 import java.util.function.Supplier;
+import lombok.RequiredArgsConstructor;
 import works.weave.socks.cart.action.FirstResultOrDefault;
 import works.weave.socks.cart.entities.Cart;
 
+@RequiredArgsConstructor
 public class CartResource implements Resource<Cart>, HasContents<CartContentsResource> {
   private final CartDAO cartRepository;
   private final String customerId;
-
-  public CartResource(CartDAO cartRepository, String customerId) {
-    this.cartRepository = cartRepository;
-    this.customerId = customerId;
-  }
 
   @Override
   public Runnable destroy() {

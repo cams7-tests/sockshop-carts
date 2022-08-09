@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class MongoConfiguration {
 
   @Bean
-  public MongoClientOptions optionsProvider() {
+  MongoClientOptions optionsProvider() {
     MongoClientOptions.Builder optionsBuilder = new MongoClientOptions.Builder();
     optionsBuilder.serverSelectionTimeout(10000);
     MongoClientOptions options = optionsBuilder.build();

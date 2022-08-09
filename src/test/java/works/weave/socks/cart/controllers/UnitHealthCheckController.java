@@ -32,14 +32,14 @@ public class UnitHealthCheckController {
   @Configuration
   static class HealthCheckControllerTestConfiguration {
     @Bean
-    public HealthCheckController healthCheckController() {
-      return new HealthCheckController();
-    }
-
-    @Bean
     public MongoTemplate mongoTemplate() {
       MongoTemplate mongoTemplate = mock(MongoTemplate.class);
       return mongoTemplate;
+    }
+
+    @Bean
+    public HealthCheckController healthCheckController(MongoTemplate mongoTemplate) {
+      return new HealthCheckController(mongoTemplate);
     }
   }
 }

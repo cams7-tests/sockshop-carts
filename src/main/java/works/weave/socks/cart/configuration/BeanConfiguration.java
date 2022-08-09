@@ -15,7 +15,7 @@ import works.weave.socks.cart.repositories.ItemRepository;
 public class BeanConfiguration {
   @Bean
   @Autowired
-  public CartDAO getCartDao(CartRepository cartRepository) {
+  CartDAO getCartDao(CartRepository cartRepository) {
     return new CartDAO() {
       @Override
       public void delete(Cart cart) {
@@ -36,7 +36,7 @@ public class BeanConfiguration {
 
   @Bean
   @Autowired
-  public ItemDAO getItemDao(ItemRepository itemRepository) {
+  ItemDAO getItemDao(ItemRepository itemRepository) {
     return new ItemDAO() {
       @Override
       public Item save(Item item) {

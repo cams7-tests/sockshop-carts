@@ -1,17 +1,14 @@
 package works.weave.socks.cart.item;
 
 import java.util.function.Supplier;
+import lombok.RequiredArgsConstructor;
 import works.weave.socks.cart.cart.Resource;
 import works.weave.socks.cart.entities.Item;
 
+@RequiredArgsConstructor
 public class ItemResource implements Resource<Item> {
   private final ItemDAO itemRepository;
   private final Supplier<Item> item;
-
-  public ItemResource(ItemDAO itemRepository, Supplier<Item> item) {
-    this.itemRepository = itemRepository;
-    this.item = item;
-  }
 
   @Override
   public Runnable destroy() {
