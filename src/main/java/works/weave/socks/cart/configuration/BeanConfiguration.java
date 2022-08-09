@@ -1,7 +1,6 @@
 package works.weave.socks.cart.configuration;
 
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import works.weave.socks.cart.cart.CartDAO;
@@ -14,7 +13,6 @@ import works.weave.socks.cart.repositories.ItemRepository;
 @Configuration
 public class BeanConfiguration {
   @Bean
-  @Autowired
   CartDAO getCartDao(CartRepository cartRepository) {
     return new CartDAO() {
       @Override
@@ -35,7 +33,6 @@ public class BeanConfiguration {
   }
 
   @Bean
-  @Autowired
   ItemDAO getItemDao(ItemRepository itemRepository) {
     return new ItemDAO() {
       @Override

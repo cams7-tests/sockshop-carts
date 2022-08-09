@@ -27,13 +27,13 @@ public class CartsController {
   @ResponseStatus(OK)
   @GetMapping(value = "/{customerId}")
   public Cart get(@PathVariable String customerId) {
-    return new CartResource(cartDAO, customerId).value().get();
+    return getCartResource(customerId).value().get();
   }
 
   @ResponseStatus(ACCEPTED)
   @DeleteMapping(value = "/{customerId}")
   public void delete(@PathVariable String customerId) {
-    new CartResource(cartDAO, customerId).destroy().run();
+    getCartResource(customerId).destroy().run();
   }
 
   @ResponseStatus(ACCEPTED)
@@ -41,9 +41,13 @@ public class CartsController {
   public void mergeCarts(
       @PathVariable String customerId, @RequestParam(value = "sessionId") String sessionId) {
     log.debug("Merge carts request received for ids: {} and {}", customerId, sessionId);
-    CartResource sessionCart = new CartResource(cartDAO, sessionId);
-    CartResource customerCart = new CartResource(cartDAO, customerId);
+    var sessionCart = getCartResource(sessionId);
+    var customerCart = getCartResource(customerId);
     customerCart.merge(sessionCart.value().get()).run();
     delete(sessionId);
+  }
+
+  private CartResource getCartResource(String customerId) {
+    return new CartResource(cartDAO, customerId);
   }
 }

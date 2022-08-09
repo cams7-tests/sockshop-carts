@@ -6,7 +6,6 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.util.List;
-import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,15 +50,14 @@ public class ItemsController {
   @PostMapping(consumes = APPLICATION_JSON_VALUE)
   public Item addToCart(@PathVariable String customerId, @RequestBody Item item) {
     // If the item does not exist in the cart, create new one in the repository.
-    FoundItem foundItem =
-        new FoundItem(() -> cartsController.get(customerId).contents(), () -> item);
+    var foundItem = new FoundItem(() -> cartsController.get(customerId).contents(), () -> item);
     if (!foundItem.hasItem()) {
-      Supplier<Item> newItem = new ItemResource(itemDAO, () -> item).create();
+      var newItem = new ItemResource(itemDAO, () -> item).create();
       log.debug("Did not find item. Creating item for user: {}, {}", customerId, newItem.get());
-      new CartResource(cartDAO, customerId).contents().get().add(newItem).run();
+      getCartResource(customerId).contents().get().add(newItem).run();
       return item;
     } else {
-      Item newItem = new Item(foundItem.get(), foundItem.get().getQuantity() + 1);
+      var newItem = new Item(foundItem.get(), foundItem.get().getQuantity() + 1);
       log.debug("Found item in cart. Incrementing for user: {}, {}", customerId, newItem);
       updateItem(customerId, newItem);
       return newItem;
@@ -69,11 +67,11 @@ public class ItemsController {
   @ResponseStatus(ACCEPTED)
   @DeleteMapping(value = "/{itemId:.*}")
   public void removeItem(@PathVariable String customerId, @PathVariable String itemId) {
-    FoundItem foundItem = new FoundItem(() -> getItems(customerId), () -> new Item(itemId));
-    Item item = foundItem.get();
+    var foundItem = new FoundItem(() -> getItems(customerId), () -> new Item(itemId));
+    var item = foundItem.get();
 
     log.debug("Removing item from cart: {}", item);
-    new CartResource(cartDAO, customerId).contents().get().delete(() -> item).run();
+    getCartResource(customerId).contents().get().delete(() -> item).run();
 
     log.debug("Removing item from repository: {}", item);
     new ItemResource(itemDAO, () -> item).destroy().run();
@@ -83,8 +81,12 @@ public class ItemsController {
   @PatchMapping(consumes = APPLICATION_JSON_VALUE)
   public void updateItem(@PathVariable String customerId, @RequestBody Item item) {
     // Merge old and new items
-    ItemResource itemResource = new ItemResource(itemDAO, () -> get(customerId, item.getItemId()));
+    var itemResource = new ItemResource(itemDAO, () -> get(customerId, item.getItemId()));
     log.debug("Merging item in cart for user: {}, {}", customerId, item);
     itemResource.merge(item).run();
+  }
+
+  private CartResource getCartResource(String customerId) {
+    return new CartResource(cartDAO, customerId);
   }
 }
