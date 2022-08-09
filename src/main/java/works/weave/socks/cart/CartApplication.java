@@ -1,14 +1,22 @@
 package works.weave.socks.cart;
 
-// import io.prometheus.client.spring.boot.EnablePrometheusEndpoint;
-import org.springframework.boot.SpringApplication;
+import static java.time.ZoneOffset.UTC;
+import static java.util.TimeZone.getTimeZone;
+import static java.util.TimeZone.setDefault;
+import static org.springframework.boot.SpringApplication.run;
+
+import javax.annotation.PostConstruct;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-// @EnablePrometheusEndpoint
 public class CartApplication {
 
-  public static void main(String[] args) {
-    SpringApplication.run(CartApplication.class, args);
+  public static void main(String... args) {
+    run(CartApplication.class, args);
+  }
+
+  @PostConstruct
+  public void init() {
+    setDefault(getTimeZone(UTC));
   }
 }

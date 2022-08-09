@@ -25,11 +25,11 @@ public class HealthCheckController {
   @ResponseStatus(OK)
   @GetMapping(path = "/health")
   public @ResponseBody Map<String, List<HealthCheck>> getHealth() {
-    Map<String, List<HealthCheck>> map = new HashMap<String, List<HealthCheck>>();
-    List<HealthCheck> healthChecks = new ArrayList<HealthCheck>();
+    var map = new HashMap<String, List<HealthCheck>>();
+    var healthChecks = new ArrayList<HealthCheck>();
 
-    HealthCheck app = new HealthCheck("carts", STATUS_OK);
-    HealthCheck database = new HealthCheck("carts-db", STATUS_OK);
+    var app = new HealthCheck("carts", STATUS_OK);
+    var database = new HealthCheck("carts-db", STATUS_OK);
 
     try {
       mongoTemplate.executeCommand("{ buildInfo: 1 }");
