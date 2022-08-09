@@ -52,7 +52,7 @@ public class ItemsController {
       new CartResource(cartDAO, customerId).contents().get().add(newItem).run();
       return item;
     } else {
-      Item newItem = new Item(foundItem.get(), foundItem.get().quantity() + 1);
+      Item newItem = new Item(foundItem.get(), foundItem.get().getQuantity() + 1);
       LOG.debug("Found item in cart. Incrementing for user: " + customerId + ", " + newItem);
       updateItem(customerId, newItem);
       return newItem;
@@ -76,7 +76,7 @@ public class ItemsController {
   @RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.PATCH)
   public void updateItem(@PathVariable String customerId, @RequestBody Item item) {
     // Merge old and new items
-    ItemResource itemResource = new ItemResource(itemDAO, () -> get(customerId, item.itemId()));
+    ItemResource itemResource = new ItemResource(itemDAO, () -> get(customerId, item.getItemId()));
     LOG.debug("Merging item in cart for user: " + customerId + ", " + item);
     itemResource.merge(item).run();
   }

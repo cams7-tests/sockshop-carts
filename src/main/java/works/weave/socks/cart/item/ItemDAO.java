@@ -16,18 +16,18 @@ public interface ItemDAO {
 
     @Override
     public Item save(Item item) {
-      return store.put(item.itemId(), item);
+      return store.put(item.getItemId(), item);
     }
 
     @Override
     public void destroy(Item item) {
-      store.remove(item.itemId());
+      store.remove(item.getItemId());
     }
 
     @Override
     public Item findOne(String id) {
       return store.entrySet().stream()
-          .filter(i -> i.getValue().id().equals(id))
+          .filter(i -> i.getValue().getId().equals(id))
           .map(Map.Entry::getValue)
           .findFirst()
           .orElse(null);

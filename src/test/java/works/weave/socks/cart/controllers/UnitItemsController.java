@@ -43,7 +43,7 @@ public class UnitItemsController {
     itemsController.addToCart(customerId, item);
     assertThat(itemsController.getItems(customerId), is(hasSize(1)));
     assertThat(itemsController.getItems(customerId), is(org.hamcrest.CoreMatchers.hasItem(item)));
-    assertThat(itemDAO.findOne(item.id()).quantity(), is(equalTo(2)));
+    assertThat(itemDAO.findOne(item.getId()).getQuantity(), is(equalTo(2)));
   }
 
   @Test
@@ -52,7 +52,7 @@ public class UnitItemsController {
     String customerId = "customerIdRemove";
     itemsController.addToCart(customerId, item);
     assertThat(itemsController.getItems(customerId), is(hasSize(1)));
-    itemsController.removeItem(customerId, item.itemId());
+    itemsController.removeItem(customerId, item.getItemId());
     assertThat(itemsController.getItems(customerId), is(hasSize(0)));
   }
 
@@ -62,10 +62,10 @@ public class UnitItemsController {
     String customerId = "customerIdQuantity";
     itemsController.addToCart(customerId, item);
     assertThat(
-        itemsController.getItems(customerId).get(0).quantity(), is(equalTo(item.quantity())));
+        itemsController.getItems(customerId).get(0).getQuantity(), is(equalTo(item.getQuantity())));
     Item anotherItem = new Item(item, 15);
     itemsController.updateItem(customerId, anotherItem);
-    assertThat(itemDAO.findOne(item.id()).quantity(), is(equalTo(anotherItem.quantity())));
+    assertThat(itemDAO.findOne(item.getId()).getQuantity(), is(equalTo(anotherItem.getQuantity())));
   }
 
   @Configuration

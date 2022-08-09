@@ -1,11 +1,20 @@
 package works.weave.socks.cart.entities;
 
 import javax.validation.constraints.NotNull;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+@Data
+@EqualsAndHashCode(exclude = {"id"})
 @Document
 public class Item {
+  private static final String DEFAULT_ID = null;
+  private static final String DEFAULT_ITEM_ID = "";
+  private static final int DEFAULT_QUANTITY = 1;
+  private static final float DEFAULT_UNIT_PRICE = 0F;
+
   @Id private String id;
 
   @NotNull(message = "Item Id must not be null")
@@ -22,11 +31,11 @@ public class Item {
   }
 
   public Item() {
-    this(null, "", 1, 0F);
+    this(DEFAULT_ID, DEFAULT_ITEM_ID, DEFAULT_QUANTITY, DEFAULT_UNIT_PRICE);
   }
 
   public Item(String itemId) {
-    this(null, itemId, 1, 0F);
+    this(DEFAULT_ID, itemId, DEFAULT_QUANTITY, DEFAULT_UNIT_PRICE);
   }
 
   public Item(Item item, String id) {
@@ -34,78 +43,6 @@ public class Item {
   }
 
   public Item(Item item, int quantity) {
-    this(item.id(), item.itemId, quantity, item.unitPrice);
-  }
-
-  public String id() {
-    return id;
-  }
-
-  public String itemId() {
-    return itemId;
-  }
-
-  public int quantity() {
-    return quantity;
-  }
-
-  @Override
-  public String toString() {
-    return "Item{"
-        + "id='"
-        + id
-        + '\''
-        + ", itemId='"
-        + itemId
-        + '\''
-        + ", quantity="
-        + quantity
-        + ", unitPrice="
-        + unitPrice
-        + '}';
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-
-    Item item = (Item) o;
-
-    return itemId != null ? itemId.equals(item.itemId) : item.itemId == null;
-  }
-
-  // ****** Crappy getter/setters for Jackson JSON invoking ********
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getItemId() {
-    return itemId;
-  }
-
-  public void setItemId(String itemId) {
-    this.itemId = itemId;
-  }
-
-  public int getQuantity() {
-    return quantity;
-  }
-
-  public void setQuantity(int quantity) {
-    this.quantity = quantity;
-  }
-
-  public float getUnitPrice() {
-    return unitPrice;
-  }
-
-  public void setUnitPrice(float unitPrice) {
-    this.unitPrice = unitPrice;
+    this(item.id, item.itemId, quantity, item.unitPrice);
   }
 }

@@ -38,7 +38,7 @@ public class UnitCartContentsResource {
     contentsResource.add(() -> item).run();
     assertThat(contentsResource.contents().get(), IsCollectionWithSize.hasSize(1));
     assertThat(contentsResource.contents().get(), containsInAnyOrder(item));
-    Item item2 = new Item(item.itemId());
+    Item item2 = new Item(item.getItemId());
     contentsResource.delete(() -> item2).run();
     assertThat(contentsResource.contents().get(), IsCollectionWithSize.hasSize(0));
   }

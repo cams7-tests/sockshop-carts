@@ -30,6 +30,6 @@ public class ItemResource implements Resource<Item> {
 
   @Override
   public Runnable merge(Item toMerge) {
-    return () -> itemRepository.save(new Item(value().get(), toMerge.quantity()));
+    return () -> itemRepository.save(new Item(value().get(), toMerge.getQuantity()));
   }
 }
