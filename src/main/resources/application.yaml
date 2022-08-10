@@ -16,10 +16,14 @@ spring:
 #      probability: 1.0  
 management:
   endpoint:
+    env:
+      enabled: false    
+    metrics:
+      enabled: false
+    loggers:
+      enabled: false    
     health:
       enabled: false
-    metrics:
-      enabled: true
     prometheus:
       enabled: true
   endpoints:
