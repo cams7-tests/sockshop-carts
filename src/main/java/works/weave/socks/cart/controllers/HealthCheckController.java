@@ -24,7 +24,8 @@ public class HealthCheckController {
 
   @ResponseStatus(OK)
   @GetMapping(path = "/health")
-  public @ResponseBody Map<String, List<HealthCheck>> getHealth() {
+  @ResponseBody
+  Map<String, List<HealthCheck>> getHealth() {
     var map = new HashMap<String, List<HealthCheck>>();
     var healthChecks = new ArrayList<HealthCheck>();
 

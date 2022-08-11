@@ -1,13 +1,12 @@
 server:
   port: ${port:8080}
-#  servlet:
-#    context-path: ${CONTEXT_PATH:/}
 spring:
   application:
     name: carts
   data:
     mongodb:
-      uri: mongodb://${db:carts-db}:27017/data
+      uri: ${MONGODB_CONNECTION_STRING:mongodb://localhost:27017}
+      database: carts
 #  zipkin:
 #    base-url: http://${zipkin_host:zipkin}:9411/
 #    enabled: ${zipkin_enabled:false}

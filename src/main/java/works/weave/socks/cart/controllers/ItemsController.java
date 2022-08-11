@@ -36,19 +36,19 @@ public class ItemsController {
 
   @ResponseStatus(OK)
   @GetMapping(value = "/{itemId:.*}")
-  public Item get(@PathVariable String customerId, @PathVariable String itemId) {
+  Item get(@PathVariable String customerId, @PathVariable String itemId) {
     return new FoundItem(() -> getItems(customerId), () -> new Item(itemId)).get();
   }
 
   @ResponseStatus(OK)
   @GetMapping
-  public List<Item> getItems(@PathVariable String customerId) {
+  List<Item> getItems(@PathVariable String customerId) {
     return cartsController.get(customerId).contents();
   }
 
   @ResponseStatus(CREATED)
   @PostMapping(consumes = APPLICATION_JSON_VALUE)
-  public Item addToCart(@PathVariable String customerId, @RequestBody Item item) {
+  Item addToCart(@PathVariable String customerId, @RequestBody Item item) {
     // If the item does not exist in the cart, create new one in the repository.
     var foundItem = new FoundItem(() -> cartsController.get(customerId).contents(), () -> item);
     if (!foundItem.hasItem()) {
@@ -66,7 +66,7 @@ public class ItemsController {
 
   @ResponseStatus(ACCEPTED)
   @DeleteMapping(value = "/{itemId:.*}")
-  public void removeItem(@PathVariable String customerId, @PathVariable String itemId) {
+  void removeItem(@PathVariable String customerId, @PathVariable String itemId) {
     var foundItem = new FoundItem(() -> getItems(customerId), () -> new Item(itemId));
     var item = foundItem.get();
 
@@ -79,7 +79,7 @@ public class ItemsController {
 
   @ResponseStatus(ACCEPTED)
   @PatchMapping(consumes = APPLICATION_JSON_VALUE)
-  public void updateItem(@PathVariable String customerId, @RequestBody Item item) {
+  void updateItem(@PathVariable String customerId, @RequestBody Item item) {
     // Merge old and new items
     var itemResource = new ItemResource(itemDAO, () -> get(customerId, item.getItemId()));
     log.debug("Merging item in cart for user: {}, {}", customerId, item);

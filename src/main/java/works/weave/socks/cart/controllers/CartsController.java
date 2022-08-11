@@ -26,19 +26,19 @@ public class CartsController {
 
   @ResponseStatus(OK)
   @GetMapping(value = "/{customerId}")
-  public Cart get(@PathVariable String customerId) {
+  Cart get(@PathVariable String customerId) {
     return getCartResource(customerId).value().get();
   }
 
   @ResponseStatus(ACCEPTED)
   @DeleteMapping(value = "/{customerId}")
-  public void delete(@PathVariable String customerId) {
+  void delete(@PathVariable String customerId) {
     getCartResource(customerId).destroy().run();
   }
 
   @ResponseStatus(ACCEPTED)
   @GetMapping(value = "/{customerId}/merge")
-  public void mergeCarts(
+  void mergeCarts(
       @PathVariable String customerId, @RequestParam(value = "sessionId") String sessionId) {
     log.debug("Merge carts request received for ids: {} and {}", customerId, sessionId);
     var sessionCart = getCartResource(sessionId);
