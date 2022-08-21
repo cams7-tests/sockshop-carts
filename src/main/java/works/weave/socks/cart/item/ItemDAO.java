@@ -1,7 +1,5 @@
 package works.weave.socks.cart.item;
 
-import java.util.HashMap;
-import java.util.Map;
 import works.weave.socks.cart.entities.Item;
 
 public interface ItemDAO {
@@ -10,27 +8,4 @@ public interface ItemDAO {
   void destroy(Item item);
 
   Item findOne(String id);
-
-  class Fake implements ItemDAO {
-    private Map<String, Item> store = new HashMap<>();
-
-    @Override
-    public Item save(Item item) {
-      return store.put(item.getItemId(), item);
-    }
-
-    @Override
-    public void destroy(Item item) {
-      store.remove(item.getItemId());
-    }
-
-    @Override
-    public Item findOne(String id) {
-      return store.entrySet().stream()
-          .filter(i -> i.getValue().getId().equals(id))
-          .map(Map.Entry::getValue)
-          .findFirst()
-          .orElse(null);
-    }
-  }
 }

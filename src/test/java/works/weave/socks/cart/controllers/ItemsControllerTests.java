@@ -1,88 +1,273 @@
 package works.weave.socks.cart.controllers;
 
+import static br.com.six2six.fixturefactory.Fixture.from;
+import static org.apache.commons.lang3.ClassUtils.getPackageName;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static works.weave.socks.cart.template.CartTemplate.CUSTOMER_ID1;
+import static works.weave.socks.cart.template.DomainTemplateLoader.VALID_CART1;
+import static works.weave.socks.cart.template.DomainTemplateLoader.VALID_ITEM1;
 
+import br.com.six2six.fixturefactory.loader.FixtureFactoryLoader;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import works.weave.socks.cart.cart.CartDAO;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import works.weave.socks.cart.entities.Cart;
 import works.weave.socks.cart.entities.Item;
-import works.weave.socks.cart.item.ItemDAO;
+import works.weave.socks.cart.template.DomainTemplateLoader;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration
+@SpringBootTest
+@TestPropertySource(properties = "spring.mongodb.embedded.version=3.5.5")
 public class ItemsControllerTests {
 
-  @Autowired private ItemDAO itemDAO;
-  @Autowired private ItemsController itemsController;
+  private static final String ID_FIELD = "_id";
 
-  @Test
-  void whenNewItemAdd() {
-    var item = new Item("id", "itemId", 1, 0F);
-    var customerId = "customerIdAdd";
-    itemsController.addToCart(customerId, item);
-    assertThat(itemsController.getItems(customerId)).hasSize(1);
-    assertThat(itemsController.getItems(customerId)).contains(item);
+  @Autowired private ObjectMapper objectMapper;
+
+  @Autowired private WebApplicationContext applicationContext;
+
+  @Autowired private MongoTemplate mongoTemplate;
+
+  private MockMvc mockMvc;
+
+  @BeforeAll
+  static void loadTemplates() {
+    FixtureFactoryLoader.loadTemplates(getPackageName(DomainTemplateLoader.class));
+  }
+
+  @BeforeEach
+  void setup() {
+    mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
   }
 
   @Test
-  void whenExistIncrementQuantity() {
-    var item = new Item("id", "itemId", 1, 0F);
-    var customerId = "customerIdIncrement";
-    itemsController.addToCart(customerId, item);
-    itemsController.addToCart(customerId, item);
-    assertThat(itemsController.getItems(customerId)).hasSize(1);
-    assertThat(itemsController.getItems(customerId)).contains(item);
-    assertThat(itemDAO.findOne(item.getId()).getQuantity()).isEqualTo(2);
+  void whenAddItem_thenReturns201() throws Exception {
+    Cart cart = from(Cart.class).gimme(VALID_CART1);
+    cart = getCopy(cart, Cart.class);
+    cart.setItems(List.of());
+
+    mongoTemplate.insert(cart, Cart.COLLECTION_NAME);
+
+    Item item = from(Item.class).gimme(VALID_ITEM1);
+    item = getCopy(item, Item.class);
+    item.setId(null);
+
+    mockMvc
+        .perform(
+            post(String.format("/carts/%s/items", CUSTOMER_ID1))
+                .content(objectMapper.writeValueAsString(item))
+                .contentType(APPLICATION_JSON_VALUE))
+        .andExpect(status().isCreated())
+        .andExpect(content().contentType(APPLICATION_JSON_VALUE))
+        .andExpect(jsonPath("$.id", notNullValue()))
+        .andExpect(jsonPath("$.itemId", is(item.getItemId())))
+        .andExpect(jsonPath("$.quantity", is(item.getQuantity())))
+        .andExpect(jsonPath("$.unitPrice", notNullValue()));
+
+    assertThat(
+            mongoTemplate.exists(
+                new Query().addCriteria(Criteria.where(ID_FIELD).is(cart.getId())),
+                Cart.COLLECTION_NAME))
+        .isTrue();
+    assertThat(
+            mongoTemplate.exists(
+                new Query().addCriteria(Criteria.where(ID_FIELD).exists(true)),
+                Item.COLLECTION_NAME))
+        .isTrue();
+
+    mongoTemplate.dropCollection(Cart.COLLECTION_NAME);
+    mongoTemplate.dropCollection(Item.COLLECTION_NAME);
   }
 
   @Test
-  void shouldRemoveItemFromCart() {
-    var item = new Item("id", "itemId", 1, 0F);
-    var customerId = "customerIdRemove";
-    itemsController.addToCart(customerId, item);
-    assertThat(itemsController.getItems(customerId)).hasSize(1);
-    itemsController.removeItem(customerId, item.getItemId());
-    assertThat(itemsController.getItems(customerId)).hasSize(0);
+  void whenUpdateItem_thenReturns201() throws Exception {
+    Cart cart = from(Cart.class).gimme(VALID_CART1);
+    Item item = from(Item.class).gimme(VALID_ITEM1);
+
+    mongoTemplate.insert(item, Item.COLLECTION_NAME);
+    mongoTemplate.insert(cart, Cart.COLLECTION_NAME);
+
+    mockMvc
+        .perform(
+            post(String.format("/carts/%s/items", CUSTOMER_ID1))
+                .content(objectMapper.writeValueAsString(item))
+                .contentType(APPLICATION_JSON_VALUE))
+        .andExpect(status().isCreated())
+        .andExpect(content().contentType(APPLICATION_JSON_VALUE))
+        .andExpect(jsonPath("$.id", is(item.getId())))
+        .andExpect(jsonPath("$.itemId", is(item.getItemId())))
+        .andExpect(jsonPath("$.quantity", is(item.getQuantity() + 1)))
+        .andExpect(jsonPath("$.unitPrice", notNullValue()));
+
+    assertThat(
+            mongoTemplate.exists(
+                new Query().addCriteria(Criteria.where(ID_FIELD).is(cart.getId())),
+                Cart.COLLECTION_NAME))
+        .isTrue();
+    assertThat(
+            mongoTemplate.exists(
+                new Query().addCriteria(Criteria.where(ID_FIELD).is(item.getId())),
+                Item.COLLECTION_NAME))
+        .isTrue();
+
+    mongoTemplate.dropCollection(Cart.COLLECTION_NAME);
+    mongoTemplate.dropCollection(Item.COLLECTION_NAME);
   }
 
   @Test
-  void shouldSetQuantity() {
-    var item = new Item("id", "itemId", 1, 0F);
-    var customerId = "customerIdQuantity";
-    itemsController.addToCart(customerId, item);
-    assertThat(itemsController.getItems(customerId).get(0).getQuantity())
-        .isEqualTo(item.getQuantity());
-    var anotherItem = new Item(item, 15);
-    itemsController.updateItem(customerId, anotherItem);
-    assertThat(itemDAO.findOne(item.getId()).getQuantity()).isEqualTo(anotherItem.getQuantity());
+  void whenGetItems_thenReturns200() throws Exception {
+    Cart cart = from(Cart.class).gimme(VALID_CART1);
+    Item item = from(Item.class).gimme(VALID_ITEM1);
+
+    mongoTemplate.insert(item, Item.COLLECTION_NAME);
+    mongoTemplate.insert(cart, Cart.COLLECTION_NAME);
+
+    mockMvc
+        .perform(get(String.format("/carts/%s/items", CUSTOMER_ID1)))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(APPLICATION_JSON_VALUE))
+        .andExpect(jsonPath("$[0].id", is(item.getId())))
+        .andExpect(jsonPath("$[0].itemId", is(item.getItemId())))
+        .andExpect(jsonPath("$[0].quantity", is(item.getQuantity())))
+        .andExpect(jsonPath("$[0].unitPrice", notNullValue()));
+
+    assertThat(
+            mongoTemplate.exists(
+                new Query().addCriteria(Criteria.where(ID_FIELD).is(cart.getId())),
+                Cart.COLLECTION_NAME))
+        .isTrue();
+    assertThat(
+            mongoTemplate.exists(
+                new Query().addCriteria(Criteria.where(ID_FIELD).is(item.getId())),
+                Item.COLLECTION_NAME))
+        .isTrue();
+
+    mongoTemplate.dropCollection(Cart.COLLECTION_NAME);
+    mongoTemplate.dropCollection(Item.COLLECTION_NAME);
   }
 
-  @Configuration
-  static class ItemsControllerTestConfiguration {
-    @Bean
-    public ItemDAO itemDAO() {
-      return new ItemDAO.Fake();
-    }
+  @Test
+  void whenGetItem_thenReturns200() throws Exception {
+    Cart cart = from(Cart.class).gimme(VALID_CART1);
+    Item item = from(Item.class).gimme(VALID_ITEM1);
 
-    @Bean
-    public CartDAO cartDAO() {
-      return new CartDAO.Fake();
-    }
+    mongoTemplate.insert(item, Item.COLLECTION_NAME);
+    mongoTemplate.insert(cart, Cart.COLLECTION_NAME);
 
-    @Bean
-    public CartsController cartsController(CartDAO cartDAO) {
-      return new CartsController(cartDAO);
-    }
+    mockMvc
+        .perform(get(String.format("/carts/%s/items/%s", CUSTOMER_ID1, item.getItemId())))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(APPLICATION_JSON_VALUE))
+        .andExpect(jsonPath("$.id", is(item.getId())))
+        .andExpect(jsonPath("$.itemId", is(item.getItemId())))
+        .andExpect(jsonPath("$.quantity", is(item.getQuantity())))
+        .andExpect(jsonPath("$.unitPrice", notNullValue()));
 
-    @Bean
-    public ItemsController itemsController(
-        ItemDAO itemDAO, CartDAO cartDAO, CartsController cartsController) {
-      return new ItemsController(itemDAO, cartDAO, cartsController);
-    }
+    assertThat(
+            mongoTemplate.exists(
+                new Query().addCriteria(Criteria.where(ID_FIELD).is(cart.getId())),
+                Cart.COLLECTION_NAME))
+        .isTrue();
+    assertThat(
+            mongoTemplate.exists(
+                new Query().addCriteria(Criteria.where(ID_FIELD).is(item.getId())),
+                Item.COLLECTION_NAME))
+        .isTrue();
+
+    mongoTemplate.dropCollection(Cart.COLLECTION_NAME);
+    mongoTemplate.dropCollection(Item.COLLECTION_NAME);
+  }
+
+  @Test
+  void whenDeleteItem_thenReturns202() throws Exception {
+    Cart cart = from(Cart.class).gimme(VALID_CART1);
+    Item item = from(Item.class).gimme(VALID_ITEM1);
+
+    mongoTemplate.insert(item, Item.COLLECTION_NAME);
+    mongoTemplate.insert(cart, Cart.COLLECTION_NAME);
+
+    mockMvc
+        .perform(delete(String.format("/carts/%s/items/%s", CUSTOMER_ID1, item.getItemId())))
+        .andExpect(status().is2xxSuccessful());
+
+    assertThat(
+            mongoTemplate.exists(
+                new Query().addCriteria(Criteria.where(ID_FIELD).is(cart.getId())),
+                Cart.COLLECTION_NAME))
+        .isTrue();
+    assertThat(
+            mongoTemplate.exists(
+                new Query().addCriteria(Criteria.where(ID_FIELD).is(item.getId())),
+                Item.COLLECTION_NAME))
+        .isFalse();
+
+    mongoTemplate.dropCollection(Cart.COLLECTION_NAME);
+    mongoTemplate.dropCollection(Item.COLLECTION_NAME);
+  }
+
+  @Test
+  void whenUpdateItemQuantity_thenReturns202() throws Exception {
+    Cart cart = from(Cart.class).gimme(VALID_CART1);
+    Item item = from(Item.class).gimme(VALID_ITEM1);
+
+    mongoTemplate.insert(item, Item.COLLECTION_NAME);
+    mongoTemplate.insert(cart, Cart.COLLECTION_NAME);
+
+    var newQuantity = 7;
+
+    mockMvc
+        .perform(
+            patch(String.format("/carts/%s/items", CUSTOMER_ID1))
+                .content(
+                    objectMapper.writeValueAsString(
+                        new Item(null, item.getItemId(), newQuantity, 0)))
+                .contentType(APPLICATION_JSON_VALUE))
+        .andExpect(status().is2xxSuccessful());
+
+    assertThat(
+            mongoTemplate.exists(
+                new Query().addCriteria(Criteria.where(ID_FIELD).is(cart.getId())),
+                Cart.COLLECTION_NAME))
+        .isTrue();
+    assertThat(
+            mongoTemplate.exists(
+                new Query()
+                    .addCriteria(
+                        new Criteria()
+                            .andOperator(
+                                Criteria.where(ID_FIELD).is(item.getId()),
+                                Criteria.where("quantity").is(newQuantity))),
+                Item.COLLECTION_NAME))
+        .isTrue();
+
+    mongoTemplate.dropCollection(Cart.COLLECTION_NAME);
+    mongoTemplate.dropCollection(Item.COLLECTION_NAME);
+  }
+
+  private <T> T getCopy(T object, Class<T> type)
+      throws JsonMappingException, JsonProcessingException {
+    return objectMapper.readValue(objectMapper.writeValueAsString(object), type);
   }
 }

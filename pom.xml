@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.works.weave.microservices-demo</groupId>
 	<artifactId>carts</artifactId>
-	<version>1.0.2-SNAPSHOT</version>
+	<version>1.0.3-SNAPSHOT</version>
 	<name>carts</name>
 	<description>Carts service for microservices-demo application</description>
 	<properties>
@@ -70,6 +70,12 @@
 			<groupId>de.flapdoodle.embed</groupId>
 			<artifactId>de.flapdoodle.embed.mongo</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>br.com.six2six</groupId>
+		    <artifactId>fixture-factory</artifactId>
+		    <version>3.1.0</version>
+		    <scope>test</scope>
 		</dependency>
 	</dependencies>
 

@@ -1,5 +1,7 @@
 package works.weave.socks.cart.entities;
 
+import static works.weave.socks.cart.entities.Cart.COLLECTION_NAME;
+
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -9,8 +11,11 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@Document
+@Document(collection = COLLECTION_NAME)
 public class Cart {
+
+  public static final String COLLECTION_NAME = "cart";
+
   @Id private String id;
 
   @NotNull private String customerId;

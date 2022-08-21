@@ -1,5 +1,7 @@
 package works.weave.socks.cart.entities;
 
+import static works.weave.socks.cart.entities.Item.COLLECTION_NAME;
+
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -8,8 +10,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @EqualsAndHashCode(exclude = {"id", "quantity", "unitPrice"})
-@Document
+@Document(collection = COLLECTION_NAME)
 public class Item {
+
+  public static final String COLLECTION_NAME = "item";
+
   private static final String DEFAULT_ID = null;
   private static final String DEFAULT_ITEM_ID = "";
   private static final int DEFAULT_QUANTITY = 1;
