@@ -5,6 +5,11 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -24,6 +29,7 @@ import works.weave.socks.cart.item.FoundItem;
 import works.weave.socks.cart.item.ItemDAO;
 import works.weave.socks.cart.item.ItemResource;
 
+@Tag(name = "Cart Item Service")
 @RequiredArgsConstructor
 @Log4j2
 @RestController
@@ -34,21 +40,36 @@ public class ItemsController {
   private final CartDAO cartDAO;
   private final CartsController cartsController;
 
+  @Operation(description = "Get an cart item")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "Ok")})
   @ResponseStatus(OK)
   @GetMapping(value = "/{itemId:.*}")
-  Item get(@PathVariable String customerId, @PathVariable String itemId) {
+  Item get(
+      @Parameter(name = "customerId", required = true, description = "Customer id") @PathVariable
+          String customerId,
+      @Parameter(name = "itemId", required = true, description = "Catalogue item id") @PathVariable
+          String itemId) {
     return new FoundItem(() -> getItems(customerId), () -> new Item(itemId)).get();
   }
 
+  @Operation(description = "Get cart items")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "Ok")})
   @ResponseStatus(OK)
   @GetMapping
-  List<Item> getItems(@PathVariable String customerId) {
+  List<Item> getItems(
+      @Parameter(name = "customerId", required = true, description = "Customer id") @PathVariable
+          String customerId) {
     return cartsController.get(customerId).contents();
   }
 
+  @Operation(description = "Create cart item")
+  @ApiResponses({@ApiResponse(responseCode = "201", description = "Created")})
   @ResponseStatus(CREATED)
   @PostMapping(consumes = APPLICATION_JSON_VALUE)
-  Item addToCart(@PathVariable String customerId, @RequestBody Item item) {
+  Item addToCart(
+      @Parameter(name = "customerId", required = true, description = "Customer id") @PathVariable
+          String customerId,
+      @RequestBody Item item) {
     // If the item does not exist in the cart, create new one in the repository.
     var foundItem = new FoundItem(() -> cartsController.get(customerId).contents(), () -> item);
     if (!foundItem.hasItem()) {
@@ -64,9 +85,15 @@ public class ItemsController {
     }
   }
 
+  @Operation(description = "Delete cart item by catalogue item id")
+  @ApiResponses({@ApiResponse(responseCode = "202", description = "Accepted")})
   @ResponseStatus(ACCEPTED)
   @DeleteMapping(value = "/{itemId:.*}")
-  void removeItem(@PathVariable String customerId, @PathVariable String itemId) {
+  void removeItem(
+      @Parameter(name = "customerId", required = true, description = "Customer id") @PathVariable
+          String customerId,
+      @Parameter(name = "itemId", required = true, description = "Catalogue item id") @PathVariable
+          String itemId) {
     var foundItem = new FoundItem(() -> getItems(customerId), () -> new Item(itemId));
     var item = foundItem.get();
 
@@ -77,9 +104,14 @@ public class ItemsController {
     new ItemResource(itemDAO, () -> item).destroy().run();
   }
 
+  @Operation(description = "Update cart item")
+  @ApiResponses({@ApiResponse(responseCode = "202", description = "Accepted")})
   @ResponseStatus(ACCEPTED)
   @PatchMapping(consumes = APPLICATION_JSON_VALUE)
-  void updateItem(@PathVariable String customerId, @RequestBody Item item) {
+  void updateItem(
+      @Parameter(name = "customerId", required = true, description = "Customer id") @PathVariable
+          String customerId,
+      @RequestBody Item item) {
     // Merge old and new items
     var itemResource = new ItemResource(itemDAO, () -> get(customerId, item.getItemId()));
     log.debug("Merging item in cart for user: {}, {}", customerId, item);

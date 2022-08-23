@@ -2,6 +2,7 @@ package works.weave.socks.cart.entities;
 
 import static works.weave.socks.cart.entities.Cart.COLLECTION_NAME;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -16,11 +17,17 @@ public class Cart {
 
   public static final String COLLECTION_NAME = "cart";
 
-  @Id private String id;
+  @Schema(example = "62f551ab0e00db6610aee1b4", description = "Cart id")
+  @Id
+  private String id;
 
-  @NotNull private String customerId;
+  @Schema(example = "57a98d98e4b00679b4a830b2", description = "Customer id")
+  @NotNull
+  private String customerId;
 
-  @DBRef private List<Item> items;
+  @Schema(description = "Items")
+  @DBRef
+  private List<Item> items;
 
   private Cart(String id, String customerId, List<Item> items) {
     super();

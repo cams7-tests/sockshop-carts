@@ -1,5 +1,8 @@
 server:
   port: ${port:8080}
+  error:
+    include-message: ALWAYS
+    include-stacktrace: NEVER  
 spring:
   application:
     name: carts
@@ -34,3 +37,7 @@ management:
     export:
       prometheus:
         enabled: true
+        
+springdoc:
+  api-docs:
+    path: /api-docs
